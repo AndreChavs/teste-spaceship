@@ -2,7 +2,7 @@ export const fetchUserIds = async () => {
   const promessa = new Promise((resolve) => {
     setTimeout(() => {
       resolve(["john.smith", "sara.lee", "jack.ma"])
-    },1000)
+    },100)
   })
   const response = await promessa;    
   if(response instanceof Array){

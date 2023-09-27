@@ -6,7 +6,7 @@ export const sendEmail = async (userId: string) => {
       }else{
         reject(() => console.error(`Ops, desculpe. Um Erro Ocorreu!`))
       }
-    },1000)
+    },100)
   })
   const response = await promessa
   if(typeof response === 'boolean'){
