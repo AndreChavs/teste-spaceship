@@ -1,67 +1,56 @@
 import React from "react";
+import { fetchUserIds } from "@/functions/fetchUsersIds"
+import { checkStatus } from "@/functions/checkStatus"
+import { sendEmail } from "@/functions/sendEmail"
+
 
 
 export default function Home() {
   const [userData, setUserData] = React.useState<string[]>([])
 
-  const fetchUserIds = async () => {
-    return ["john.smith", "sara.lee", "jack.ma"];
-  };
 
-  const checkStatus = async (userId: string) => {
-    return Math.random() > 0.8
-      ? { status: "offline", id: userId }
-      : { status: "online", id: userId };
-  };
-
-  const sendEmail = async (userId: string) => {    
-    return Math.random() > 0.1 ? true : false;
-  };
-
-  async function main(
-    users:() => Promise<string[]>,
-    check:(v:string) => Promise<{status:string; id:string}>,
-    send:(v:string) => Promise<boolean>) {
-    try {
-      let data: string[] = []
-      const usuarios = await users()
-      const usuarioCheck = usuarios.map(async (user) => {
-        const userCheck = await check(user)        
-        if(userCheck.status === 'online'){          
-          return userCheck.id
-        }
-      })
-      usuarioCheck.forEach(async (user) => {
-        const item = await user
-        if (item !== undefined) {
-          const userSend = await send(item)
-          if(userSend){
-            data.push(item)                                    
-          }
-        }
-        setUserData(data)
-      })
-      
-    } catch (error) {
-      console.error(`DEU RUIM: ${error}`)
-    }
-  }
   React.useEffect(() => {
-    main(fetchUserIds,checkStatus,sendEmail)
+    async function main(
+      usuarios:() => Promise<string[]>,
+      statusCheck:(value:string) => Promise<{status:string, id:string}>,
+      emailSend:(value:string) => Promise<boolean>,
+      setUserData:React.Dispatch<React.SetStateAction<string[]>>
+    ) {
+      try {
+        let data: string[] = []
+        const users = await usuarios();
+        users.forEach(async (user) => {
+          const userCheck = await statusCheck(user);
+          if(userCheck.status === 'online'){
+            const userSend = await emailSend(userCheck.id);
+            if (userSend) {
+              data.push(userCheck.id)
+            }
+          }
+          setUserData(data)
+        })
+      } catch (error) {
+        console.error(`DEU RUIM: ${error}`)
+      }
+    }
+    main(fetchUserIds,checkStatus,sendEmail,setUserData)
     
     
   },[])
   function render() {
     if (userData) {
       return userData.map((user) => {
+        console.log(user)
         return <li key={user}>{user}</li>
       })
+    }else {
+      throw new Error()
     }
   }
     
   return (
     <>
-     {render() && render() }
+     {render() && render()}
     </>
   )
 }
