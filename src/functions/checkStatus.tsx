@@ -10,7 +10,7 @@ export const checkStatus = async (userId: string) => {
           console.error(`Ops, desculpe. Ocorreu um erro ao transportar os dados!`)
         })
       }
-    },100)
+    })
   })
   const response = await promessa
   if(typeof response === 'object' && response){

@@ -10,14 +10,14 @@ export default function Home() {
 
 
   React.useEffect(() => {
+    let data: string[] = []
     async function main(
       usuarios:() => Promise<string[]>,
       statusCheck:(value:string) => Promise<{status:string, id:string}>,
       emailSend:(value:string) => Promise<boolean>,
       setUserData:React.Dispatch<React.SetStateAction<string[]>>
-    ) {
+      ) {
       try {
-        let data: string[] = []
         const users = await usuarios();
         users.forEach(async (user) => {
           const userCheck = await statusCheck(user);
@@ -28,12 +28,17 @@ export default function Home() {
             }
           }
           setUserData(data)
+          // console.log(data)
         })
       } catch (error) {
         console.error(`DEU RUIM: ${error}`)
       }
     }
-    main(fetchUserIds,checkStatus,sendEmail,setUserData)
+    console.log(userData.length)
+    if(userData.length === 0){
+      main(fetchUserIds,checkStatus,sendEmail,setUserData)
+    }
+    
     
     
   },[])
@@ -44,7 +49,7 @@ export default function Home() {
         return <li key={user}>{user}</li>
       })
     }else {
-      throw new Error()
+      return <p>Erro ao Buscar Dados</p>
     }
   }
     
