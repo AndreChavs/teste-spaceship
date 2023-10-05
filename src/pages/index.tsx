@@ -1,41 +1,49 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
 import { fetchUserIds } from "@/functions/fetchUsersIds"
 import { checkStatus } from "@/functions/checkStatus"
 import { sendEmail } from "@/functions/sendEmail"
-import { GetStaticProps } from "next";
 
-export const getStaticProps:GetStaticProps = async () => {
-  const users = await fetchUserIds()
-  const promise = users.map(async (user) => {
-    const userCheck = await checkStatus(user);
-    if(userCheck.status === 'online'){
-      const userSend = await sendEmail(userCheck.id)
-      if(userSend){
-        console.log(userCheck.id)
-        return userCheck.id
-      }      
+
+
+
+export default function Home() {
+  const [data , setData] = React.useState<(string | undefined)[]>()
+
+  React.useEffect(() => {
+    async function main(
+      fetchUsers: () => Promise<string[]>,
+      statusCheck: (userId: string) => Promise<{status: string, id:string}>,
+      emailSend: (userId: string) => Promise<boolean>,
+      
+    ) {
+      const users = await fetchUsers()
+      const promesa = users.map(async (user) => {
+        const checkUser = await statusCheck(user)
+        if (checkUser.status === 'online') {
+          const sendUser = await emailSend(checkUser.id)
+          if (sendUser) {
+            console.log(checkUser)
+            return checkUser.id
+          }
+        }
+      });
+      const result = await Promise.all(promesa)
+      const response = result.filter((user) => user !== undefined)
+      setData(response)
     }
-    return null
-  });
-  const results = await Promise.all(promise)
-  const data = results.filter((user) => user !== null)
-  return {
-    props:{data}
-  }
-}
+    if(!data){
+      main(fetchUserIds, checkStatus, sendEmail)
+    }
+  },[])
 
-export default function Home({data}:{data:string[]}) {
-  const [userData, setUserData] = React.useState<string[]>(data)  
 
-  function render() {
-    return userData.map((user) => {
-      return <li key={user}>{user}</li>
-    })
-  }
-    
+
   return (
     <>
-     {render()}
+     {data?.map((user) => {
+      return <li key={user}>{user}</li>
+     })}
     </>
   )
 }
